@@ -1,0 +1,220 @@
+/* WP Chart Race - Front Styles */
+
+.wcr-chart-container {
+    width: 100%;
+    margin: 2rem auto;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    box-sizing: border-box;
+    overflow: visible;
+    position: relative;
+    /* ★修正: min-heightを削除 (少ないデータ件数でも余白ができないように) */
+    /* min-height: 200px; */
+}
+
+/* (以下は前回と同じです) */
+.wcr-loader {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+    color: #888;
+    z-index: 10;
+}
+.wcr-spinner {
+    width: 40px;
+    height: 40px;
+    margin: 0 auto 10px;
+    border: 4px solid #f3f3f3;
+    border-top: 4px solid #3498db;
+    border-radius: 50%;
+    animation: wcr-spin 1s linear infinite;
+}
+@keyframes wcr-spin {
+    0% {
+        transform: rotate(0deg);
+    }
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+.wcr-chart-title {
+    text-align: center;
+    font-size: 2rem;
+    margin: 0 0 10px 0;
+    color: #ccc;
+    font-weight: 800;
+    line-height: 1.2;
+}
+.wcr-time-label {
+    font-size: 2rem;
+    font-weight: 800;
+    text-align: right;
+    margin-bottom: 10px;
+    color: #ccc;
+    line-height: 1;
+}
+.wcr-scale-wrap {
+    position: relative;
+    height: 30px;
+    margin-bottom: 10px;
+    border-bottom: 1px solid #ddd;
+    width: 100%;
+}
+.wcr-tick {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    border-left: 1px dashed #eee;
+    transform: translateX(-50%);
+    pointer-events: none;
+}
+.wcr-tick:first-child {
+    border-left: 1px solid #ddd;
+}
+.wcr-tick-text {
+    position: absolute;
+    top: -20px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 0.8rem;
+    color: #888;
+    white-space: nowrap;
+    font-weight: bold;
+}
+.wcr-bars-wrap {
+    position: relative;
+    width: 100%;
+    margin-top: 5px;
+    overflow: hidden;
+}
+.wcr-bar-row {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    will-change: transform;
+}
+.wcr-row-label {
+    text-align: right;
+    padding-right: 15px;
+    font-weight: bold;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    box-sizing: border-box;
+    color: #333;
+    display: none;
+}
+.wcr-row-bar-area {
+    height: 100%;
+    display: flex;
+    align-items: center;
+    position: relative;
+}
+.wcr-bar {
+    height: 100%;
+    background: #4e79a7;
+    border-radius: 0 4px 4px 0;
+    opacity: 0.9;
+    transition: width 0.1s linear;
+    position: relative;
+    display: flex;
+    align-items: center;
+    overflow: hidden;
+}
+.wcr-bar-label-internal {
+    color: #fff;
+    font-weight: bold;
+    white-space: nowrap;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.7), -1px -1px 2px rgba(0, 0, 0, 0.7), 1px -1px 2px rgba(0, 0, 0, 0.7), -1px 1px 2px rgba(0, 0, 0, 0.7);
+    max-width: 100%;
+    text-overflow: ellipsis;
+    box-sizing: border-box;
+    z-index: 2;
+}
+.wcr-row-value {
+    margin-left: 10px;
+    font-weight: bold;
+    color: #555;
+    white-space: nowrap;
+    font-variant-numeric: tabular-nums;
+}
+.wcr-controls {
+    margin-top: 30px;
+    display: flex;
+    gap: 15px;
+    justify-content: center;
+    padding-top: 20px;
+    border-top: 1px solid #eee;
+}
+.wcr-btn {
+    padding: 10px 24px;
+    background: #f0f0f1;
+    border: 1px solid #8c8f94;
+    color: #2271b1;
+    font-weight: 600;
+    cursor: pointer;
+    border-radius: 4px;
+    font-size: 14px;
+}
+.wcr-btn:hover {
+    background: #f6f7f7;
+    border-color: #2271b1;
+    color: #135e96;
+}
+.wcr-front-container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 20px;
+    background: #fff;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+}
+.wcr-message {
+    padding: 12px 15px;
+    margin-bottom: 20px;
+    border-radius: 4px;
+    font-weight: bold;
+}
+.wcr-message.wcr-error {
+    background-color: #fce8e2;
+    color: #d32f2f;
+    border-left: 5px solid #d32f2f;
+}
+.wcr-message.wcr-success {
+    background-color: #e8f8f5;
+    color: #00796b;
+    border-left: 5px solid #00796b;
+}
+.wcr-form-group {
+    margin-bottom: 20px;
+}
+.wcr-form-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: bold;
+    color: #444;
+}
+.wcr-form-group input[type='text'],
+.wcr-form-group input[type='file'] {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    box-sizing: border-box;
+}
+.wcr-form-actions {
+    text-align: right;
+}
+.wcr-form-actions .wcr-btn {
+    background: #2271b1;
+    color: #fff;
+    border: none;
+}
+.wcr-form-actions .wcr-btn:hover {
+    background: #135e96;
+}

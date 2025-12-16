@@ -1,0 +1,106 @@
+/* WP Chart Race Admin Styles */
+
+/* コンテナ */
+.wcr-container {
+    margin-top: 20px;
+}
+
+/* 新規作成画面 */
+.wcr-screen {
+    background: #fff;
+    padding: 20px;
+    border: 1px solid #ccd0d4;
+    box-shadow: 0 1px 1px rgba(0, 0, 0, 0.04);
+    max-width: 800px;
+}
+.wcr-subtitle {
+    font-size: 1.1em;
+    margin-bottom: 20px;
+    color: #666;
+}
+
+/* 編集画面：ショートコードエリア */
+.wcr-shortcode-area {
+    background: #f0f0f1;
+    padding: 10px 15px;
+    border-bottom: 1px solid #ddd;
+    margin-bottom: 15px;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+.wcr-shortcode-label {
+    margin: 0;
+    font-weight: bold;
+    color: #333;
+}
+.wcr-shortcode-box {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+.wcr-shortcode-box code {
+    background: #fff;
+    padding: 3px 8px;
+    border: 1px solid #ccc;
+    border-radius: 3px;
+    font-size: 1.1em;
+}
+.wcr-copy-msg {
+    color: #00796b;
+    font-weight: bold;
+    display: none;
+}
+
+/* 編集画面：レイアウト */
+.wcr-admin-layout {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 20px;
+}
+
+@media (max-width: 960px) {
+    .wcr-admin-layout {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* チャートプレビューエリア */
+.wcr-chart-display {
+    background: #fff;
+    border: 1px solid #e5e5e5;
+    padding: 20px;
+    min-height: 300px;
+}
+
+/* 設定エリア */
+.wcr-settings-container {
+    background: #f9f9f9;
+    padding: 15px;
+    border: 1px solid #ddd;
+}
+
+.wcr-control-group {
+    margin-bottom: 20px;
+}
+
+.wcr-control-group label {
+    font-weight: bold;
+    display: block;
+    margin-bottom: 5px;
+}
+
+.wcr-val-display {
+    font-weight: normal;
+    color: #555;
+    margin-left: 5px;
+}
+
+.wcr-input-range {
+    width: 100%;
+}
+
+.wcr-input-select {
+    width: 100%;
+    max-width: 100%;
+}
