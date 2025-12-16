@@ -19,6 +19,19 @@
     color: #666;
 }
 
+/* ソース選択エリア */
+.wcr-source-selector {
+    background: #fcfcfc;
+    border: 1px solid #ddd;
+    padding: 10px;
+    border-radius: 4px;
+}
+.wcr-source-selector label {
+    display: inline-block;
+    margin-right: 15px;
+    font-weight: 500;
+}
+
 /* 編集画面：ショートコードエリア */
 .wcr-shortcode-area {
     background: #f0f0f1;

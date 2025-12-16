@@ -17,6 +17,7 @@ class WpChartRaceAdmin {
             'margin_px'   => get_option('wcr_default_margin_px', 20),
             'label_mode'  => get_option('wcr_default_label_mode', 'both'),
             'color_palette' => get_option('wcr_default_color_palette', 'a'),
+            'loop'        => get_option('wcr_default_loop', '0'),
         );
     }
 
@@ -79,43 +80,77 @@ class WpChartRaceAdmin {
         }
 
         $title = isset($_POST['wcr_title']) ? sanitize_text_field(wp_unslash($_POST['wcr_title'])) : '';
+        $source_type = isset($_POST['wcr_source_type']) ? sanitize_text_field($_POST['wcr_source_type']) : 'csv';
+
+        $data = array();
+        $parse_error = '';
 
         if (empty($title)) {
             $this->create_error = __('Title is required.', 'bar-chart-race');
-        } elseif (empty($_FILES['wcr_csv']['tmp_name'])) {
-            $this->create_error = __('CSV file is required.', 'bar-chart-race');
-        } else {
-            $data = $this->parse_csv($_FILES['wcr_csv']['tmp_name']);
-            if (empty($data)) {
-                $this->create_error = __('Failed to parse CSV.', 'bar-chart-race');
+            return;
+        }
+
+        if ($source_type === 'csv') {
+            if (empty($_FILES['wcr_csv']['tmp_name'])) {
+                $this->create_error = __('CSV file is required.', 'bar-chart-race');
+                return;
+            }
+            $raw_content = file_get_contents($_FILES['wcr_csv']['tmp_name']);
+            $data = $this->parse_csv_content($raw_content);
+            if (empty($data)) $parse_error = __('Failed to parse CSV.', 'bar-chart-race');
+        } elseif ($source_type === 'g_sheet') {
+            $sheet_url = isset($_POST['wcr_sheet_url']) ? esc_url_raw($_POST['wcr_sheet_url']) : '';
+            if (empty($sheet_url)) {
+                $this->create_error = __('Google Sheet URL is required.', 'bar-chart-race');
+                return;
+            }
+            $csv_url = $this->convert_sheet_url_to_csv($sheet_url);
+            if (!$csv_url) {
+                $this->create_error = __('Invalid Google Sheet URL.', 'bar-chart-race');
+                return;
+            }
+
+            $response = wp_remote_get($csv_url);
+            if (is_wp_error($response) || wp_remote_retrieve_response_code($response) !== 200) {
+                $this->create_error = __('Failed to fetch data from Google Sheets. Please make sure the sheet is published or accessible via link.', 'bar-chart-race');
+                return;
+            }
+
+            $raw_content = wp_remote_retrieve_body($response);
+            $data = $this->parse_csv_content($raw_content);
+            if (empty($data)) $parse_error = __('Failed to parse Sheet data.', 'bar-chart-race');
+        }
+
+        if ($parse_error) {
+            $this->create_error = $parse_error;
+        } elseif (!empty($data)) {
+            $post_id = wp_insert_post(array(
+                'post_type' => 'chart_race',
+                'post_status' => 'publish',
+                'post_title' => $title,
+                'post_author' => get_current_user_id() ?: 0,
+            ));
+
+            if ($post_id && !is_wp_error($post_id)) {
+                update_post_meta($post_id, '_wcr_data', wp_json_encode($data));
+
+                $defaults = $this->get_default_options();
+                update_post_meta($post_id, '_wcr_speed', $defaults['speed']);
+                update_post_meta($post_id, '_wcr_bar_height', $defaults['bar_height']);
+                update_post_meta($post_id, '_wcr_bar_spacing', $defaults['bar_spacing']);
+                update_post_meta($post_id, '_wcr_font_size', $defaults['font_size']);
+                update_post_meta($post_id, '_wcr_max_bars', $defaults['max_bars']);
+                update_post_meta($post_id, '_wcr_date_format', $defaults['date_format']);
+                update_post_meta($post_id, '_wcr_show_title', $defaults['show_title']);
+                update_post_meta($post_id, '_wcr_margin_px', $defaults['margin_px']);
+                update_post_meta($post_id, '_wcr_label_mode', $defaults['label_mode']);
+                update_post_meta($post_id, '_wcr_color_palette', $defaults['color_palette']);
+                update_post_meta($post_id, '_wcr_loop', $defaults['loop']);
+
+                wp_redirect(admin_url('post.php?post=' . $post_id . '&action=edit'));
+                exit;
             } else {
-                $post_id = wp_insert_post(array(
-                    'post_type' => 'chart_race',
-                    'post_status' => 'publish',
-                    'post_title' => $title,
-                    'post_author' => get_current_user_id() ?: 0,
-                ));
-
-                if ($post_id && !is_wp_error($post_id)) {
-                    update_post_meta($post_id, '_wcr_data', wp_json_encode($data));
-
-                    $defaults = $this->get_default_options();
-                    update_post_meta($post_id, '_wcr_speed', $defaults['speed']);
-                    update_post_meta($post_id, '_wcr_bar_height', $defaults['bar_height']);
-                    update_post_meta($post_id, '_wcr_bar_spacing', $defaults['bar_spacing']);
-                    update_post_meta($post_id, '_wcr_font_size', $defaults['font_size']);
-                    update_post_meta($post_id, '_wcr_max_bars', $defaults['max_bars']);
-                    update_post_meta($post_id, '_wcr_date_format', $defaults['date_format']);
-                    update_post_meta($post_id, '_wcr_show_title', $defaults['show_title']);
-                    update_post_meta($post_id, '_wcr_margin_px', $defaults['margin_px']);
-                    update_post_meta($post_id, '_wcr_label_mode', $defaults['label_mode']);
-                    update_post_meta($post_id, '_wcr_color_palette', $defaults['color_palette']);
-
-                    wp_redirect(admin_url('post.php?post=' . $post_id . '&action=edit'));
-                    exit;
-                } else {
-                    $this->create_error = __('Failed to create post.', 'bar-chart-race');
-                }
+                $this->create_error = __('Failed to create post.', 'bar-chart-race');
             }
         }
     }
@@ -135,7 +170,6 @@ class WpChartRaceAdmin {
 
         wp_enqueue_style(BAR_CHART_RACE_SLUG . '-admin',  BAR_CHART_RACE_URL . '/css/admin.css', array(), $version);
 
-        // ★修正: 標準の「新規追加」ボタンを非表示にする
         wp_add_inline_style(BAR_CHART_RACE_SLUG . '-admin', '.page-title-action { display: none !important; }');
 
         wp_enqueue_script(BAR_CHART_RACE_SLUG . '-admin', BAR_CHART_RACE_URL . '/js/admin.js', array('jquery'), $version, true);
@@ -179,6 +213,9 @@ class WpChartRaceAdmin {
         $saved_title = get_post_meta($post->ID, '_wcr_show_title', true);
         $show_title = ($saved_title !== '') ? $saved_title : $defaults['show_title'];
 
+        $saved_loop = get_post_meta($post->ID, '_wcr_loop', true);
+        $loop = ($saved_loop !== '') ? $saved_loop : $defaults['loop'];
+
         $options = array(
             'speed'       => get_post_meta($post->ID, '_wcr_speed', true) ?: $defaults['speed'],
             'bar_height'  => get_post_meta($post->ID, '_wcr_bar_height', true) ?: $defaults['bar_height'],
@@ -190,6 +227,7 @@ class WpChartRaceAdmin {
             'margin_px'   => get_post_meta($post->ID, '_wcr_margin_px', true) ?: $defaults['margin_px'],
             'label_mode'  => get_post_meta($post->ID, '_wcr_label_mode', true) ?: $defaults['label_mode'],
             'color_palette' => get_post_meta($post->ID, '_wcr_color_palette', true) ?: $defaults['color_palette'],
+            'loop'        => $loop,
         );
 
         echo '<script>window.wcrInitialOptions = ' . json_encode($options) . ';</script>';
@@ -234,6 +272,13 @@ class WpChartRaceAdmin {
                     <label>
                         <input type="checkbox" name="wcr_show_title" class="wcr-input-check" value="1" <?php checked($options['show_title'], '1'); ?>>
                         <?php esc_html_e('Show Title', 'bar-chart-race'); ?>
+                    </label>
+                </div>
+
+                <div class="wcr-control-group">
+                    <label>
+                        <input type="checkbox" name="wcr_loop" class="wcr-input-check" value="1" <?php checked($options['loop'], '1'); ?>>
+                        <?php esc_html_e('Loop Animation', 'bar-chart-race'); ?>
                     </label>
                 </div>
 
@@ -316,45 +361,88 @@ class WpChartRaceAdmin {
 
         $show_title = isset($_POST['wcr_show_title']) ? '1' : '0';
         update_post_meta($post_id, '_wcr_show_title', $show_title);
+
+        $loop = isset($_POST['wcr_loop']) ? '1' : '0';
+        update_post_meta($post_id, '_wcr_loop', $loop);
     }
 
-    private function parse_csv($path) {
+    // GoogleスプレッドシートのURLをCSVエクスポートURLに変換
+    private function convert_sheet_url_to_csv($url) {
+        // 通常の公開URL: https://docs.google.com/spreadsheets/d/KEY/edit...
+        if (preg_match('/\/d\/([a-zA-Z0-9-_]+)/', $url, $matches)) {
+            $key = $matches[1];
+            return "https://docs.google.com/spreadsheets/d/{$key}/export?format=csv";
+        }
+        return false;
+    }
+
+    // 文字列データからのCSVパース (Shift-JIS対応、エイリアス対応)
+    private function parse_csv_content($content) {
         $rows = array();
-        if (!file_exists($path) || !($handle = fopen($path, 'r'))) {
-            return $rows;
+        if (empty($content)) return $rows;
+
+        // 文字コード検出とUTF-8変換
+        $encoding = mb_detect_encoding($content, 'UTF-8, SJIS-win, SJIS, EUC-JP, ASCII', true);
+        if ($encoding && $encoding !== 'UTF-8') {
+            $content = mb_convert_encoding($content, 'UTF-8', $encoding);
         }
 
-        $header = fgetcsv($handle);
-        if (!is_array($header)) {
-            fclose($handle);
-            return $rows;
-        }
+        // 行に分割
+        $lines = explode("\n", $content);
+        if (empty($lines)) return $rows;
 
-        // BOM除去と小文字化
+        // ヘッダー解析
+        $header_line = trim($lines[0]);
+        // BOM除去
+        $header_line = preg_replace('/^\xEF\xBB\xBF/', '', $header_line);
+        $header = str_getcsv($header_line);
+
+        if (!is_array($header)) return $rows;
+
+        // ヘッダー小文字化とトリム
         $header = array_map(function ($h) {
-            return strtolower(trim(preg_replace('/^\xEF\xBB\xBF/', '', $h)));
+            return strtolower(trim($h));
         }, $header);
 
-        // ★追加: 必須カラムの存在チェック
-        // time, label, value の3つが含まれていない場合はエラー(空配列)として弾く
-        $required = array('time', 'label', 'value');
-        $missing = array_diff($required, $header);
-        if (!empty($missing)) {
-            fclose($handle);
-            return $rows; // これにより "Failed to parse CSV" エラーになります
+        // カラムマッピング定義 (日本語対応)
+        $map = [
+            'time'  => ['time', 'date', 'year', 'month', 'day', '日付', '年月', '時間', '年度'],
+            'label' => ['label', 'name', 'item', 'title', 'category', 'ラベル', '名前', '項目', 'カテゴリ', 'タイトル'],
+            'value' => ['value', 'count', 'amount', 'score', 'number', '値', '数値', '売上', '金額', 'スコア', '数']
+        ];
+
+        $indices = ['time' => -1, 'label' => -1, 'value' => -1];
+
+        // ヘッダー位置の特定
+        foreach ($header as $idx => $col) {
+            foreach ($map as $key => $aliases) {
+                if ($indices[$key] === -1 && in_array($col, $aliases)) {
+                    $indices[$key] = $idx;
+                    break;
+                }
+            }
         }
 
-        while (($row = fgetcsv($handle)) !== false) {
+        // 必須カラムチェック
+        if ($indices['time'] === -1 || $indices['label'] === -1 || $indices['value'] === -1) {
+            return $rows; // マッピング失敗
+        }
+
+        // データ行の解析
+        for ($i = 1; $i < count($lines); $i++) {
+            $line = trim($lines[$i]);
+            if (empty($line)) continue;
+
+            $row = str_getcsv($line);
             if (count($row) === count($header)) {
-                $item = array_combine($header, $row);
                 $rows[] = array(
-                    'time'  => trim((string)($item['time'] ?? '')),
-                    'label' => trim((string)($item['label'] ?? '')),
-                    'value' => (float)($item['value'] ?? 0),
+                    'time'  => trim((string)($row[$indices['time']] ?? '')),
+                    'label' => trim((string)($row[$indices['label']] ?? '')),
+                    'value' => (float)($row[$indices['value']] ?? 0),
                 );
             }
         }
-        fclose($handle);
+
         return $rows;
     }
 
@@ -366,7 +454,7 @@ class WpChartRaceAdmin {
             <?php if ($error) echo '<div class="error"><p>' . esc_html($error) . '</p></div>'; ?>
 
             <div class="wcr-screen wcr-screen--upload wcr-active">
-                <p class="wcr-subtitle"><?php esc_html_e('Please upload a CSV file (Columns: time, label, value)', 'bar-chart-race'); ?></p>
+                <p class="wcr-subtitle"><?php esc_html_e('Upload a CSV file or enter Google Sheets URL.', 'bar-chart-race'); ?></p>
                 <form method="post" enctype="multipart/form-data" class="wcr-upload-form">
                     <?php wp_nonce_field('wcr_create_action', 'wcr_nonce'); ?>
                     <table class="form-table">
@@ -375,11 +463,37 @@ class WpChartRaceAdmin {
                             <td><input type="text" name="wcr_title" id="wcr_title" class="regular-text" placeholder="<?php esc_attr_e('Ex: Sales Ranking', 'bar-chart-race'); ?>" required></td>
                         </tr>
                         <tr>
+                            <th scope="row"><?php esc_html_e('Data Source', 'bar-chart-race'); ?></th>
+                            <td>
+                                <fieldset class="wcr-source-selector">
+                                    <label>
+                                        <input type="radio" name="wcr_source_type" value="csv" checked>
+                                        <?php esc_html_e('Upload CSV File', 'bar-chart-race'); ?>
+                                    </label>
+                                    <br>
+                                    <label>
+                                        <input type="radio" name="wcr_source_type" value="g_sheet">
+                                        <?php esc_html_e('Google Sheets URL', 'bar-chart-race'); ?>
+                                    </label>
+                                </fieldset>
+                            </td>
+                        </tr>
+                        <tr class="wcr-source-csv-row">
                             <th scope="row"><label for="wcr_csv"><?php esc_html_e('CSV File', 'bar-chart-race'); ?></label></th>
-                            <td><input type="file" name="wcr_csv" id="wcr_csv" accept=".csv" required></td>
+                            <td>
+                                <input type="file" name="wcr_csv" id="wcr_csv" accept=".csv">
+                                <p class="description"><?php _e('Supported columns: time (日付), label (名前), value (値)', 'bar-chart-race'); ?></p>
+                            </td>
+                        </tr>
+                        <tr class="wcr-source-sheet-row" style="display:none;">
+                            <th scope="row"><label for="wcr_sheet_url"><?php esc_html_e('Sheet URL', 'bar-chart-race'); ?></label></th>
+                            <td>
+                                <input type="url" name="wcr_sheet_url" id="wcr_sheet_url" class="large-text" placeholder="https://docs.google.com/spreadsheets/d/...">
+                                <p class="description"><?php _e('Paste the URL of a public Google Sheet.', 'bar-chart-race'); ?></p>
+                            </td>
                         </tr>
                     </table>
-                    <?php submit_button(__('Upload CSV and Create', 'bar-chart-race'), 'primary', 'wcr_upload_submit'); ?>
+                    <?php submit_button(__('Create Chart', 'bar-chart-race'), 'primary', 'wcr_upload_submit'); ?>
                 </form>
             </div>
         </div>
@@ -398,6 +512,10 @@ class WpChartRaceAdmin {
 
                 $show_title = isset($_POST['wcr_default_show_title']) ? '1' : '0';
                 update_option('wcr_default_show_title', $show_title);
+
+                $loop = isset($_POST['wcr_default_loop']) ? '1' : '0';
+                update_option('wcr_default_loop', $loop);
+
                 update_option('wcr_default_margin_px', sanitize_text_field($_POST['wcr_default_margin_px']));
                 update_option('wcr_default_label_mode', sanitize_text_field($_POST['wcr_default_label_mode']));
                 update_option('wcr_default_color_palette', sanitize_text_field($_POST['wcr_default_color_palette']));
@@ -419,6 +537,12 @@ class WpChartRaceAdmin {
                         <th scope="row"><label><?php esc_html_e('Default Show Title', 'bar-chart-race'); ?></label></th>
                         <td>
                             <label><input type="checkbox" name="wcr_default_show_title" value="1" <?php checked($defaults['show_title'], '1'); ?>> <?php esc_html_e('Show Title', 'bar-chart-race'); ?></label>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th scope="row"><label><?php esc_html_e('Default Loop Animation', 'bar-chart-race'); ?></label></th>
+                        <td>
+                            <label><input type="checkbox" name="wcr_default_loop" value="1" <?php checked($defaults['loop'], '1'); ?>> <?php esc_html_e('Loop Animation', 'bar-chart-race'); ?></label>
                         </td>
                     </tr>
                     <tr>

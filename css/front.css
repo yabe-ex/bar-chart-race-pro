@@ -7,11 +7,8 @@
     box-sizing: border-box;
     overflow: visible;
     position: relative;
-    /* ★修正: min-heightを削除 (少ないデータ件数でも余白ができないように) */
-    /* min-height: 200px; */
 }
 
-/* (以下は前回と同じです) */
 .wcr-loader {
     position: absolute;
     top: 50%;
@@ -144,11 +141,11 @@
     font-variant-numeric: tabular-nums;
 }
 .wcr-controls {
-    margin-top: 30px;
+    margin-top: 20px;
     display: flex;
+    align-items: center;
     gap: 15px;
-    justify-content: center;
-    padding-top: 20px;
+    padding-top: 15px;
     border-top: 1px solid #eee;
 }
 .wcr-btn {
@@ -166,6 +163,61 @@
     border-color: #2271b1;
     color: #135e96;
 }
+.wcr-btn-icon {
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    padding: 5px;
+    color: #555;
+    border-radius: 50%;
+    transition: background-color 0.2s, color 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+}
+.wcr-btn-icon:hover {
+    background-color: #f0f0f1;
+    color: #2271b1;
+}
+.wcr-btn-icon svg {
+    width: 24px;
+    height: 24px;
+    display: block;
+}
+.wcr-seek-bar {
+    flex-grow: 1;
+    cursor: pointer;
+    margin: 0 10px;
+    width: 100%;
+    height: 6px;
+    background: #ddd;
+    border-radius: 3px;
+    outline: none;
+    -webkit-appearance: none;
+}
+.wcr-seek-bar::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 16px;
+    height: 16px;
+    background: #2271b1;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: transform 0.1s;
+}
+.wcr-seek-bar::-webkit-slider-thumb:hover {
+    transform: scale(1.2);
+}
+.wcr-seek-bar::-moz-range-thumb {
+    width: 16px;
+    height: 16px;
+    background: #2271b1;
+    border: none;
+    border-radius: 50%;
+    cursor: pointer;
+}
+
 .wcr-front-container {
     max-width: 800px;
     margin: 0 auto;
@@ -200,12 +252,21 @@
     color: #444;
 }
 .wcr-form-group input[type='text'],
+.wcr-form-group input[type='url'],
 .wcr-form-group input[type='file'] {
     width: 100%;
     padding: 8px;
     border: 1px solid #ddd;
     border-radius: 4px;
     box-sizing: border-box;
+}
+.wcr-radio-group {
+    display: flex;
+    gap: 15px;
+    background: #f9f9f9;
+    padding: 10px;
+    border: 1px solid #eee;
+    border-radius: 4px;
 }
 .wcr-form-actions {
     text-align: right;

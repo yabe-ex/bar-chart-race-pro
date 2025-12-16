@@ -37,8 +37,8 @@ jQuery(document).ready(function ($) {
         sessionStorage.setItem('wcr_show_title', opts.show_title);
         sessionStorage.setItem('wcr_margin_px', opts.margin_px);
         sessionStorage.setItem('wcr_label_mode', opts.label_mode);
-        // ★追加
         sessionStorage.setItem('wcr_color_palette', opts.color_palette);
+        sessionStorage.setItem('wcr_loop', opts.loop);
     }
 
     function triggerUpdate() {
@@ -77,9 +77,25 @@ jQuery(document).ready(function ($) {
 
     // Checkbox Inputs
     $('.wcr-input-check').on('change', function () {
-        var val = $(this).is(':checked') ? '1' : '0'; // ★'0' に変更
+        var val = $(this).is(':checked') ? '1' : '0';
         var name = $(this).attr('name');
         sessionStorage.setItem(name, val);
         triggerUpdate();
+    });
+
+    // ★追加: データソース切り替えロジック (管理画面)
+    $('input[name="wcr_source_type"]').on('change', function () {
+        var val = $(this).val();
+        if (val === 'csv') {
+            $('.wcr-source-csv-row').show();
+            $('.wcr-source-sheet-row').hide();
+            $('#wcr_csv').prop('required', true);
+            $('#wcr_sheet_url').prop('required', false);
+        } else {
+            $('.wcr-source-csv-row').hide();
+            $('.wcr-source-sheet-row').show();
+            $('#wcr_csv').prop('required', false);
+            $('#wcr_sheet_url').prop('required', true);
+        }
     });
 });

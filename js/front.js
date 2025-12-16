@@ -103,7 +103,8 @@
             showTitle: '1',
             marginPx: 20,
             labelMode: 'both',
-            colorPalette: 'a'
+            colorPalette: 'a',
+            loop: '0'
         }
     };
 
@@ -133,7 +134,6 @@
         this.progress = 0;
         this.barPositions = {};
 
-        // ★追加: データのユニークなラベル総数を保持
         this.totalUniqueLabels = 0;
 
         this.init();
@@ -153,6 +153,7 @@
             if (this.savedSettings.margin_px !== undefined) opts.marginPx = parseInt(this.savedSettings.margin_px);
             if (this.savedSettings.label_mode) opts.labelMode = this.savedSettings.label_mode;
             if (this.savedSettings.color_palette) opts.colorPalette = this.savedSettings.color_palette;
+            if (this.savedSettings.loop !== undefined) opts.loop = this.savedSettings.loop;
         }
 
         if (this.$container.attr('id') === 'wcr-chart-preview') {
@@ -167,6 +168,7 @@
             if (sessionStorage.getItem('wcr_margin_px')) opts.marginPx = parseInt(sessionStorage.getItem('wcr_margin_px'));
             if (sessionStorage.getItem('wcr_label_mode')) opts.labelMode = sessionStorage.getItem('wcr_label_mode');
             if (sessionStorage.getItem('wcr_color_palette')) opts.colorPalette = sessionStorage.getItem('wcr_color_palette');
+            if (sessionStorage.getItem('wcr_loop') !== null) opts.loop = sessionStorage.getItem('wcr_loop');
         }
 
         this.options = opts;
@@ -187,13 +189,12 @@
     WpChartRaceApp.prototype.processData = function () {
         var self = this;
         var timeMap = {};
-        var labelMap = {}; // ラベル集計用
+        var labelMap = {};
         $.each(this.rawData, function (i, item) {
             timeMap[item.time] = true;
             labelMap[item.label] = true;
         });
 
-        // ★ユニークラベル数を計算
         this.totalUniqueLabels = Object.keys(labelMap).length;
 
         var times = Object.keys(timeMap).sort();
@@ -229,9 +230,6 @@
             $('<h2 class="wcr-chart-title"></h2>').text(this.chartTitle).appendTo(this.$container);
         }
 
-        var txtPlay = typeof wcr_front_i18n !== 'undefined' ? wcr_front_i18n.play : 'Play';
-        var txtReset = typeof wcr_front_i18n !== 'undefined' ? wcr_front_i18n.reset : 'Reset';
-
         this.$timeLabel = $('<div class="wcr-time-label"></div>').appendTo(this.$container);
         this.$scaleWrap = $('<div class="wcr-scale-wrap"></div>').appendTo(this.$container);
         this.$barsWrap = $('<div class="wcr-bars-wrap"></div>').appendTo(this.$container);
@@ -239,17 +237,36 @@
         var $controls = $('<div class="wcr-controls"></div>').appendTo(this.$container);
         var self = this;
 
-        this.$playBtn = $('<button type="button" class="wcr-btn">▶ ' + txtPlay + '</button>')
-            .on('click', function () {
-                self.togglePlay();
-            })
-            .appendTo($controls);
+        // SVGアイコン
+        var iconPlay = '<svg viewBox="0 0 24 24" class="wcr-icon"><path d="M8 5v14l11-7z" fill="currentColor"/></svg>';
+        var iconPause = '<svg viewBox="0 0 24 24" class="wcr-icon"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z" fill="currentColor"/></svg>';
+        var iconReplay =
+            '<svg viewBox="0 0 24 24" class="wcr-icon"><path d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z" fill="currentColor"/></svg>';
 
-        $('<button type="button" class="wcr-btn">↺ ' + txtReset + '</button>')
-            .on('click', function () {
-                self.reset();
+        this.icons = { play: iconPlay, pause: iconPause };
+
+        this.$playBtn = $('<button type="button" class="wcr-btn-icon" title="Play">' + iconPlay + '</button>').on('click', function () {
+            self.togglePlay();
+        });
+
+        this.$resetBtn = $('<button type="button" class="wcr-btn-icon" title="Reset">' + iconReplay + '</button>').on('click', function () {
+            self.reset();
+        });
+
+        this.$seekBar = $('<input type="range" class="wcr-seek-bar" min="0" max="1000" value="0" step="1">')
+            .on('input', function () {
+                var val = parseInt($(this).val());
+                self.seek(val);
             })
-            .appendTo($controls);
+            .on('mousedown touchstart', function () {
+                self.wasPlaying = self.isPlaying;
+                self.pause();
+            })
+            .on('mouseup touchend', function () {
+                if (self.wasPlaying) self.play();
+            });
+
+        $controls.append(this.$playBtn).append(this.$seekBar).append(this.$resetBtn);
 
         this.rowElements = {};
     };
@@ -258,11 +275,17 @@
         if (this.isPlaying) this.pause();
         else this.play();
     };
+
     WpChartRaceApp.prototype.play = function () {
-        var txtPause = typeof wcr_front_i18n !== 'undefined' ? wcr_front_i18n.pause : 'Pause';
-        if (this.currentFrameIndex >= this.frames.length - 1) this.reset();
+        if (this.currentFrameIndex >= this.frames.length - 1) {
+            this.currentFrameIndex = 0;
+            this.progress = 0;
+            this.render(0, 0, true);
+        }
+
         this.isPlaying = true;
-        this.$playBtn.text('⏸ ' + txtPause);
+        this.$playBtn.html(this.icons.pause).attr('title', 'Pause');
+
         this.lastTime = performance.now();
         var self = this;
         var loop = function (now) {
@@ -275,28 +298,63 @@
                 self.currentFrameIndex++;
                 if (self.currentFrameIndex >= self.frames.length - 1) {
                     self.currentFrameIndex = self.frames.length - 1;
-                    self.render(self.currentFrameIndex, 0, false);
-                    self.pause();
-                    return;
+
+                    if (self.options.loop == '1') {
+                        self.currentFrameIndex = 0;
+                        self.render(0, 0, true);
+                    } else {
+                        self.render(self.currentFrameIndex, 0, false);
+                        self.pause();
+                        self.$seekBar.val(1000);
+                        return;
+                    }
                 }
             }
             self.render(self.currentFrameIndex, self.progress, false);
+
+            var totalFrames = self.frames.length - 1;
+            if (totalFrames > 0) {
+                var currentTotal = self.currentFrameIndex + self.progress;
+                var pct = currentTotal / totalFrames;
+                self.$seekBar.val(Math.round(pct * 1000));
+            }
+
             self.animationId = requestAnimationFrame(loop);
         };
         this.animationId = requestAnimationFrame(loop);
     };
+
     WpChartRaceApp.prototype.pause = function () {
-        var txtPlay = typeof wcr_front_i18n !== 'undefined' ? wcr_front_i18n.play : 'Play';
         this.isPlaying = false;
-        this.$playBtn.text('▶ ' + txtPlay);
+        this.$playBtn.html(this.icons.play).attr('title', 'Play');
         if (this.animationId) cancelAnimationFrame(this.animationId);
     };
+
     WpChartRaceApp.prototype.reset = function () {
         this.pause();
         this.currentFrameIndex = 0;
         this.progress = 0;
         this.barPositions = {};
+        this.$seekBar.val(0);
         this.render(0, 0, true);
+    };
+
+    WpChartRaceApp.prototype.seek = function (val) {
+        var totalFrames = this.frames.length - 1;
+        if (totalFrames <= 0) return;
+
+        var pct = val / 1000;
+        var totalProgress = pct * totalFrames;
+
+        this.currentFrameIndex = Math.floor(totalProgress);
+        this.progress = totalProgress - this.currentFrameIndex;
+
+        if (this.currentFrameIndex >= totalFrames) {
+            this.currentFrameIndex = totalFrames;
+            this.progress = 0;
+        }
+
+        this.render(this.currentFrameIndex, this.progress, true);
     };
 
     WpChartRaceApp.prototype.render = function (idx, progress, isReset) {
@@ -325,7 +383,6 @@
             return b.value - a.value;
         });
 
-        // ★修正: 「設定値(maxBars)」と「実際のラベル数(totalUniqueLabels)」の小さい方を採用して高さを詰める
         var effectiveMaxBars = Math.min(this.options.maxBars, this.totalUniqueLabels);
 
         var displayItems = interpolated.slice(0, effectiveMaxBars);
@@ -339,7 +396,6 @@
         var self = this;
         var rowHeight = this.options.barHeight + this.options.barSpacing;
 
-        // ★高さ計算にも effectiveMaxBars を使用
         this.$barsWrap.css('height', effectiveMaxBars * rowHeight + 'px');
 
         var activeLabels = {};
@@ -429,7 +485,6 @@
 
         $.each(this.rowElements, function (label, $el) {
             if (!activeLabels[label]) {
-                // ランク外の位置も effectiveMaxBars 基準で計算して隠す
                 var targetOff = effectiveMaxBars * rowHeight + 20;
                 var current = self.barPositions[label] || targetOff;
                 if (!isReset) current += (targetOff - current) * CONFIG.POSITION_EASING;
@@ -484,6 +539,22 @@
                 $(this).on('wcr:config-update', function () {
                     app.updateConfig();
                 });
+            }
+        });
+
+        // ★追加: フロントエンド用データソース切り替えロジック
+        $('.wcr-source-toggle').on('change', function () {
+            var val = $(this).val();
+            if (val === 'csv') {
+                $('.wcr-source-csv').show();
+                $('.wcr-source-g_sheet').hide();
+                $('#wcr_csv').prop('required', true);
+                $('#wcr_sheet_url').prop('required', false);
+            } else {
+                $('.wcr-source-csv').hide();
+                $('.wcr-source-g_sheet').show();
+                $('#wcr_csv').prop('required', false);
+                $('#wcr_sheet_url').prop('required', true);
             }
         });
     });
