@@ -1,7 +1,6 @@
 <?php
 
 class WpChartRaceFront {
-    // (front_enqueue, enqueue_assets は変更なし)
 
     public function front_enqueue() {
         $version  = (defined('BAR_CHART_RACE_DEVELOP') && true === BAR_CHART_RACE_DEVELOP) ? time() : BAR_CHART_RACE_VERSION;
@@ -23,7 +22,6 @@ class WpChartRaceFront {
         wp_localize_script(BAR_CHART_RACE_SLUG . '-front', 'wcr_front_i18n', $front_i18n);
     }
 
-    // GoogleスプレッドシートURL変換
     private function convert_sheet_url_to_csv($url) {
         if (preg_match('/\/d\/([a-zA-Z0-9-_]+)/', $url, $matches)) {
             $key = $matches[1];
@@ -32,12 +30,10 @@ class WpChartRaceFront {
         return false;
     }
 
-    // スマートCSV解析 (Shift-JIS/日本語カラム対応)
     private function parse_csv_content($content) {
         $rows = array();
         if (empty($content)) return $rows;
 
-        // Encoding
         $encoding = mb_detect_encoding($content, 'UTF-8, SJIS-win, SJIS, EUC-JP, ASCII', true);
         if ($encoding && $encoding !== 'UTF-8') {
             $content = mb_convert_encoding($content, 'UTF-8', $encoding);
@@ -145,6 +141,13 @@ class WpChartRaceFront {
                         $post_id = wp_insert_post(array('post_type' => 'chart_race', 'post_status' => 'publish', 'post_title' => $title, 'post_author' => get_current_user_id() ?: 0));
                         if ($post_id && !is_wp_error($post_id)) {
                             update_post_meta($post_id, '_wcr_data', wp_json_encode($data));
+
+                            update_post_meta($post_id, '_wcr_source_type', $source_type);
+                            if ($source_type === 'g_sheet' && isset($_POST['wcr_sheet_url'])) {
+                                update_post_meta($post_id, '_wcr_sheet_url', esc_url_raw($_POST['wcr_sheet_url']));
+                            }
+
+                            // 最新のデフォルト設定を適用
                             $defaults = array(
                                 'speed'       => get_option('wcr_default_speed', 1.0),
                                 'bar_height'  => get_option('wcr_default_bar_height', 30),
@@ -154,9 +157,13 @@ class WpChartRaceFront {
                                 'date_format' => get_option('wcr_default_date_format', 'YYYY-MM-DD'),
                                 'show_title'  => get_option('wcr_default_show_title', '1'),
                                 'margin_px'   => get_option('wcr_default_margin_px', 20),
-                                'label_mode'  => get_option('wcr_default_label_mode', 'both'),
+                                'label_type_outside' => get_option('wcr_default_label_type_outside', 'text'),
+                                'label_type_inside'  => get_option('wcr_default_label_type_inside', 'text'),
                                 'color_palette' => get_option('wcr_default_color_palette', 'a'),
                                 'loop'          => get_option('wcr_default_loop', '0'),
+                                'bg_image'      => '',
+                                'text_color'    => '#333333',
+                                'label_settings' => '{}',
                             );
                             foreach ($defaults as $key => $val) {
                                 update_post_meta($post_id, '_wcr_' . $key, $val);
@@ -176,28 +183,31 @@ class WpChartRaceFront {
         <div class="wcr-front-container">
             <?php if ($show_chart && $post_id) : ?>
                 <div class="wcr-success-view">
+                    <h3 class="wcr-success-title"><?php echo esc_html($message); ?></h3>
                     <?php
                     $json = get_post_meta($post_id, '_wcr_data', true);
                     $settings = array();
-                    $keys = ['speed', 'bar_height', 'bar_spacing', 'font_size', 'max_bars', 'date_format', 'show_title', 'margin_px', 'label_mode', 'color_palette', 'loop'];
+                    $keys = ['speed', 'bar_height', 'bar_spacing', 'font_size', 'max_bars', 'date_format', 'show_title', 'margin_px', 'label_type_outside', 'label_type_inside', 'color_palette', 'loop', 'bg_image', 'text_color', 'label_settings'];
                     foreach ($keys as $k) $settings[$k] = get_post_meta($post_id, '_wcr_' . $k, true);
 
                     echo '<div class="wcr-chart-container"><div class="wcr-chart" id="wcr-chart-' . esc_attr($post_id) . '" data-chart="' . esc_attr($json) . '" data-title="' . esc_attr(get_the_title($post_id)) . '" data-settings="' . esc_attr(json_encode($settings)) . '"><div class="wcr-loader"><div class="wcr-spinner"></div><p>Now Loading...</p></div></div></div>';
                     ?>
-                    <p style="margin-top:20px;">
-                        <a href="<?php echo esc_url(remove_query_arg('wcr_submitted')); ?>" class="wcr-btn"><?php esc_html_e('Create another chart', 'bar-chart-race'); ?></a>
-                    </p>
+                    <div class="wcr-front-actions">
+                        <a href="<?php echo esc_url(remove_query_arg('wcr_submitted')); ?>" class="wcr-btn wcr-btn-primary"><?php esc_html_e('Create another chart', 'bar-chart-race'); ?></a>
+                    </div>
                 </div>
             <?php else : ?>
                 <div class="wcr-upload-view">
+                    <h3 class="wcr-form-title"><?php esc_html_e('Create Your Bar Chart Race', 'bar-chart-race'); ?></h3>
                     <?php if ($error) : ?>
                         <div class="wcr-message wcr-error"><?php echo esc_html($error); ?></div>
                     <?php endif; ?>
                     <form method="post" enctype="multipart/form-data" class="wcr-front-form">
                         <?php wp_nonce_field('wcr_front_upload', 'wcr_nonce'); ?>
+
                         <div class="wcr-form-group">
                             <label for="wcr_title"><?php esc_html_e('Chart Title', 'bar-chart-race'); ?></label>
-                            <input type="text" name="wcr_title" id="wcr_title" placeholder="<?php esc_attr_e('Ex: Population Trends by Prefecture', 'bar-chart-race'); ?>" required style="width:100%;">
+                            <input type="text" name="wcr_title" id="wcr_title" class="wcr-input-lg" placeholder="<?php esc_attr_e('Ex: Population Trends by Prefecture', 'bar-chart-race'); ?>" required>
                         </div>
 
                         <div class="wcr-form-group">
@@ -210,18 +220,20 @@ class WpChartRaceFront {
 
                         <div class="wcr-form-group wcr-source-input wcr-source-csv">
                             <label for="wcr_csv"><?php esc_html_e('CSV File', 'bar-chart-race'); ?></label>
-                            <input type="file" name="wcr_csv" id="wcr_csv" accept=".csv">
-                            <p style="font-size:0.85em; color:#666; margin-top:4px;"><?php _e('Supported columns: time (日付), label (名前), value (値)', 'bar-chart-race'); ?></p>
+                            <div class="wcr-file-input-wrapper">
+                                <input type="file" name="wcr_csv" id="wcr_csv" accept=".csv">
+                            </div>
+                            <p class="wcr-help-text"><?php _e('Supported columns: time (日付), label (名前), value (値)', 'bar-chart-race'); ?></p>
                         </div>
 
                         <div class="wcr-form-group wcr-source-input wcr-source-g_sheet" style="display:none;">
                             <label for="wcr_sheet_url"><?php esc_html_e('Google Sheets URL', 'bar-chart-race'); ?></label>
-                            <input type="url" name="wcr_sheet_url" id="wcr_sheet_url" placeholder="https://docs.google.com/spreadsheets/d/...">
-                            <p style="font-size:0.85em; color:#666; margin-top:4px;"><?php _e('Make sure the sheet is public (Anyone with the link).', 'bar-chart-race'); ?></p>
+                            <input type="url" name="wcr_sheet_url" id="wcr_sheet_url" class="wcr-input-lg" placeholder="https://docs.google.com/spreadsheets/d/...">
+                            <p class="wcr-help-text"><?php _e('Make sure the sheet is public (Anyone with the link).', 'bar-chart-race'); ?></p>
                         </div>
 
                         <div class="wcr-form-actions">
-                            <button type="submit" name="wcr_front_submit" class="wcr-btn"><?php esc_html_e('Create and Show Chart', 'bar-chart-race'); ?></button>
+                            <button type="submit" name="wcr_front_submit" class="wcr-btn wcr-btn-primary wcr-btn-lg"><?php esc_html_e('Create and Show Chart', 'bar-chart-race'); ?></button>
                         </div>
                     </form>
                 </div>
@@ -247,13 +259,17 @@ class WpChartRaceFront {
             'date_format' => 'YYYY-MM-DD',
             'show_title'  => '1',
             'margin_px'   => 20,
-            'label_mode'  => 'both',
+            'label_type_outside' => 'text',
+            'label_type_inside' => 'text',
             'color_palette' => 'a',
             'loop'          => '0',
+            'bg_image'      => '',
+            'text_color'    => '#333333',
+            'label_settings' => '{}',
         );
 
         $settings = array();
-        $keys = ['speed', 'bar_height', 'bar_spacing', 'font_size', 'max_bars', 'date_format', 'show_title', 'margin_px', 'label_mode', 'color_palette', 'loop'];
+        $keys = ['speed', 'bar_height', 'bar_spacing', 'font_size', 'max_bars', 'date_format', 'show_title', 'margin_px', 'label_type_outside', 'label_type_inside', 'color_palette', 'loop', 'bg_image', 'text_color', 'label_settings'];
         foreach ($keys as $k) {
             $val = get_post_meta($post_id, '_wcr_' . $k, true);
             $settings[$k] = ($val !== '') ? $val : $defaults[$k];

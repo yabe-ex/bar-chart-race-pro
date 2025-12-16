@@ -117,3 +117,144 @@
     width: 100%;
     max-width: 100%;
 }
+
+/* データソース＆エディタセクション */
+.wcr-data-section {
+    background: #fff;
+    border: 1px solid #e5e5e5;
+    padding: 20px;
+    margin-top: 20px;
+}
+.wcr-source-config {
+    background: #fcfcfc;
+    border: 1px solid #ddd;
+    padding: 15px;
+    margin-bottom: 15px;
+    border-radius: 4px;
+}
+.wcr-sheet-sync-box {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+.wcr-sync-msg {
+    font-weight: bold;
+    margin-left: 10px;
+}
+
+/* 簡易データエディタ */
+.wcr-editor-container {
+    margin-top: 15px;
+}
+.wcr-data-editor {
+    margin-top: 10px;
+    background: #f9f9f9;
+    padding: 10px;
+    border: 1px solid #ddd;
+    max-height: 400px;
+    overflow-y: auto;
+}
+.wcr-editor-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: #fff;
+}
+.wcr-editor-table th,
+.wcr-editor-table td {
+    border: 1px solid #ccc;
+    padding: 5px;
+    text-align: left;
+}
+.wcr-editor-table input {
+    width: 100%;
+    border: none;
+    background: transparent;
+}
+.wcr-del-row {
+    color: #a00;
+    cursor: pointer;
+    font-weight: bold;
+}
+.wcr-add-row-btn {
+    margin-top: 10px;
+}
+
+/* 汎用入力フィールド */
+.wcr-input-textarea {
+    width: 100%;
+    font-family: monospace;
+}
+.wcr-input-text {
+    width: 100%;
+}
+
+/* アコーディオン設定（コンパクト化） */
+.wcr-accordion {
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    background: #fff;
+}
+.wcr-accordion-header {
+    background: #f6f7f7;
+    margin: 0;
+    padding: 8px 10px; /* パディング縮小 */
+    font-size: 12px; /* フォントサイズ縮小 */
+    cursor: pointer;
+    border-bottom: 1px solid #ddd;
+    outline: none;
+    font-weight: 600;
+}
+.wcr-accordion-header:hover {
+    background: #f0f0f1;
+}
+.wcr-accordion-content {
+    padding: 10px;
+    background: #fff;
+    border-bottom: 1px solid #ddd;
+}
+.wcr-accordion-content:last-child {
+    border-bottom: none;
+}
+
+/* アコーディオン内の設定行レイアウト */
+.wcr-setting-row {
+    display: flex;
+    align-items: center;
+    margin-bottom: 8px; /* 行間を詰める */
+}
+.wcr-setting-row:last-child {
+    margin-bottom: 0;
+}
+.wcr-setting-row label {
+    margin-bottom: 0;
+    width: 60px; /* ラベル幅固定 */
+    font-size: 12px;
+    color: #555;
+    flex-shrink: 0;
+}
+.wcr-setting-row input[type='color'] {
+    height: 24px;
+    width: 40px;
+    padding: 0 2px;
+    border: 1px solid #ccc;
+    cursor: pointer;
+}
+.wcr-flex-group {
+    display: flex;
+    flex: 1;
+    gap: 5px;
+}
+/* アイコン入力欄を少し小さく */
+.wcr-label-icon {
+    min-height: 24px;
+    height: 24px;
+    font-size: 12px;
+    line-height: 1;
+}
+.wcr-media-btn-sub {
+    min-height: 24px !important;
+    height: 24px !important;
+    line-height: 22px !important;
+    padding: 0 8px !important;
+    font-size: 11px !important;
+}

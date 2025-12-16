@@ -102,9 +102,13 @@
             fontSize: 1.0,
             showTitle: '1',
             marginPx: 20,
-            labelMode: 'both',
+            labelTypeOutside: 'text',
+            labelTypeInside: 'text',
             colorPalette: 'a',
-            loop: '0'
+            loop: '0',
+            bgImage: '',
+            textColor: '#333333',
+            labelSettings: '{}'
         }
     };
 
@@ -151,9 +155,15 @@
             if (this.savedSettings.font_size) opts.fontSize = parseFloat(this.savedSettings.font_size);
             if (this.savedSettings.show_title !== undefined) opts.showTitle = this.savedSettings.show_title;
             if (this.savedSettings.margin_px !== undefined) opts.marginPx = parseInt(this.savedSettings.margin_px);
-            if (this.savedSettings.label_mode) opts.labelMode = this.savedSettings.label_mode;
+
+            if (this.savedSettings.label_type_outside) opts.labelTypeOutside = this.savedSettings.label_type_outside;
+            if (this.savedSettings.label_type_inside) opts.labelTypeInside = this.savedSettings.label_type_inside;
+
             if (this.savedSettings.color_palette) opts.colorPalette = this.savedSettings.color_palette;
             if (this.savedSettings.loop !== undefined) opts.loop = this.savedSettings.loop;
+            if (this.savedSettings.bg_image) opts.bgImage = this.savedSettings.bg_image;
+            if (this.savedSettings.text_color) opts.textColor = this.savedSettings.text_color;
+            if (this.savedSettings.label_settings) opts.labelSettings = this.savedSettings.label_settings;
         }
 
         if (this.$container.attr('id') === 'wcr-chart-preview') {
@@ -163,16 +173,30 @@
             if (sessionStorage.getItem('wcr_date_format')) opts.dateFormat = sessionStorage.getItem('wcr_date_format');
             if (sessionStorage.getItem('wcr_bar_spacing')) opts.barSpacing = parseFloat(sessionStorage.getItem('wcr_bar_spacing'));
             if (sessionStorage.getItem('wcr_font_size')) opts.fontSize = parseFloat(sessionStorage.getItem('wcr_font_size'));
-
             if (sessionStorage.getItem('wcr_show_title') !== null) opts.showTitle = sessionStorage.getItem('wcr_show_title');
             if (sessionStorage.getItem('wcr_margin_px')) opts.marginPx = parseInt(sessionStorage.getItem('wcr_margin_px'));
-            if (sessionStorage.getItem('wcr_label_mode')) opts.labelMode = sessionStorage.getItem('wcr_label_mode');
+
+            if (sessionStorage.getItem('wcr_label_type_outside')) opts.labelTypeOutside = sessionStorage.getItem('wcr_label_type_outside');
+            if (sessionStorage.getItem('wcr_label_type_inside')) opts.labelTypeInside = sessionStorage.getItem('wcr_label_type_inside');
+
             if (sessionStorage.getItem('wcr_color_palette')) opts.colorPalette = sessionStorage.getItem('wcr_color_palette');
             if (sessionStorage.getItem('wcr_loop') !== null) opts.loop = sessionStorage.getItem('wcr_loop');
+            if (sessionStorage.getItem('wcr_bg_image')) opts.bgImage = sessionStorage.getItem('wcr_bg_image');
+            if (sessionStorage.getItem('wcr_text_color')) opts.textColor = sessionStorage.getItem('wcr_text_color');
+            if (sessionStorage.getItem('wcr_label_settings')) opts.labelSettings = sessionStorage.getItem('wcr_label_settings');
         }
 
         this.options = opts;
         this.duration = CONFIG.DEFAULT_DURATION / this.options.speed;
+
+        this.labelSettings = {};
+        try {
+            if (this.options.labelSettings) {
+                this.labelSettings = JSON.parse(this.options.labelSettings);
+            }
+        } catch (e) {
+            this.labelSettings = {};
+        }
     };
 
     WpChartRaceApp.prototype.init = function () {
@@ -221,10 +245,32 @@
     WpChartRaceApp.prototype.buildUI = function () {
         this.$container.empty();
 
-        this.$container.parent().css({
-            'padding-left': this.options.marginPx + 'px',
-            'padding-right': this.options.marginPx + 'px'
-        });
+        this.$container.css('--wcr-text-color', this.options.textColor);
+
+        var hasBg = false;
+        if (this.options.bgImage) {
+            this.$container.css({
+                'background-image': 'url(' + this.options.bgImage + ')',
+                'background-size': 'cover',
+                'background-position': 'center'
+            });
+            this.$container.addClass('wcr-has-bg');
+            hasBg = true;
+        } else {
+            this.$container.css('background-image', 'none');
+            this.$container.removeClass('wcr-has-bg');
+        }
+
+        if (!hasBg) {
+            this.$container.parent().css({
+                'padding-left': this.options.marginPx + 'px',
+                'padding-right': this.options.marginPx + 'px',
+                'padding-top': '0',
+                'padding-bottom': '0'
+            });
+        } else {
+            this.$container.parent().css({ padding: '' });
+        }
 
         if (this.options.showTitle == '1') {
             $('<h2 class="wcr-chart-title"></h2>').text(this.chartTitle).appendTo(this.$container);
@@ -237,7 +283,6 @@
         var $controls = $('<div class="wcr-controls"></div>').appendTo(this.$container);
         var self = this;
 
-        // SVGアイコン
         var iconPlay = '<svg viewBox="0 0 24 24" class="wcr-icon"><path d="M8 5v14l11-7z" fill="currentColor"/></svg>';
         var iconPause = '<svg viewBox="0 0 24 24" class="wcr-icon"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z" fill="currentColor"/></svg>';
         var iconReplay =
@@ -400,43 +445,101 @@
 
         var activeLabels = {};
 
-        var mode = this.options.labelMode;
-        var hasOutsideLabel = mode === 'outside_left' || mode === 'both';
-        var hasInsideLabel = mode !== 'outside_left';
-
-        var barJustify = 'flex-end';
-        var barPadding = '0 10px 0 0';
-        if (mode === 'inside_left') {
-            barJustify = 'flex-start';
-            barPadding = '0 0 0 10px';
-        }
+        var typeOutside = this.options.labelTypeOutside || 'text';
+        var typeInside = this.options.labelTypeInside || 'text';
 
         $.each(displayItems, function (rank, item) {
             activeLabels[item.label] = true;
             var $row = self.rowElements[item.label];
             var targetTop = rank * rowHeight;
 
-            var cIdx = 0;
-            for (var i = 0; i < item.label.length; i++) cIdx += item.label.charCodeAt(i);
-            var color = palette[cIdx % palette.length];
+            var color;
+            var setting = self.labelSettings[item.label] || {};
+            if (setting.color) {
+                color = setting.color;
+            } else {
+                var cIdx = 0;
+                for (var i = 0; i < item.label.length; i++) cIdx += item.label.charCodeAt(i);
+                color = palette[cIdx % palette.length];
+            }
+            var iconUrl = setting.icon || '';
 
             if (!$row) {
                 $row = $('<div class="wcr-bar-row"></div>');
-                var $label = $('<div class="wcr-row-label"></div>').text(item.label);
+
+                var $label = $('<div class="wcr-row-label"></div>');
+
                 var $barArea = $('<div class="wcr-row-bar-area"></div>');
                 var $bar = $('<div class="wcr-bar"></div>');
-                var $barInternalLabel = $('<span class="wcr-bar-label-internal"></span>').text(item.label);
+                var $barInternalLabel = $('<span class="wcr-bar-label-internal"></span>');
+                var $barInternalIcon = $('<div class="wcr-bar-icon-internal wcr-icon-circle"></div>');
+
                 var $value = $('<div class="wcr-row-value"></div>');
 
                 $bar.css('background-color', color);
-                $bar.append($barInternalLabel);
+                $bar.append($barInternalLabel).append($barInternalIcon);
                 $barArea.append($bar).append($value);
+
                 $row.append($label).append($barArea);
                 self.$barsWrap.append($row);
                 self.rowElements[item.label] = $row;
 
                 self.barPositions[item.label] = isReset ? targetTop : self.$barsWrap.height() + 50;
                 $row.css('transform', 'translateY(' + self.barPositions[item.label] + 'px)');
+            }
+
+            // ★修正: Outside (Left) Control
+            var $labelEl = $row.find('.wcr-row-label');
+            var $barAreaEl = $row.find('.wcr-row-bar-area');
+
+            if (typeOutside === 'none') {
+                $labelEl.hide();
+                $barAreaEl.css('width', '100%');
+            } else {
+                $labelEl.show().css('width', '20%');
+                $barAreaEl.css('width', '80%');
+
+                // アイコンモード かつ 画像がある場合
+                if (typeOutside === 'icon' && iconUrl) {
+                    $labelEl.empty();
+                    var $iconObj = $('<div class="wcr-icon-circle"></div>').css('background-image', 'url(' + iconUrl + ')');
+                    $labelEl.append($iconObj);
+                    $labelEl.css({
+                        'background-image': 'none',
+                        display: 'flex',
+                        'justify-content': 'flex-end',
+                        'align-items': 'center',
+                        height: '100%'
+                    });
+                } else {
+                    // テキストモード、またはアイコンモードだが画像がない場合（フォールバック）
+                    $labelEl.empty().text(item.label);
+                    // スタイルリセット
+                    $labelEl.css({
+                        'background-image': 'none',
+                        display: 'block', // 初期状態に戻す
+                        'justify-content': '',
+                        'align-items': '',
+                        height: ''
+                    });
+                }
+            }
+
+            // Inside (Bar) Control
+            var $intLabelEl = $row.find('.wcr-bar-label-internal');
+            var $intIconEl = $row.find('.wcr-bar-icon-internal');
+
+            if (typeInside === 'none') {
+                $intLabelEl.hide();
+                $intIconEl.hide();
+            } else if (typeInside === 'icon' && iconUrl) {
+                // アイコンモードで画像がある場合
+                $intLabelEl.hide();
+                $intIconEl.show().css('background-image', 'url(' + iconUrl + ')');
+            } else {
+                // テキストモード、またはアイコンモードだが画像がない場合
+                $intIconEl.hide();
+                $intLabelEl.show().text(item.label);
             }
 
             var $barEl = $row.find('.wcr-bar');
@@ -452,25 +555,6 @@
             }
             self.barPositions[item.label] = currentTop;
 
-            var $labelEl = $row.find('.wcr-row-label');
-            var $barAreaEl = $row.find('.wcr-row-bar-area');
-            var $intLabelEl = $row.find('.wcr-bar-label-internal');
-
-            if (hasOutsideLabel) {
-                $labelEl.show().css('width', '20%');
-                $barAreaEl.css('width', '80%');
-            } else {
-                $labelEl.hide();
-                $barAreaEl.css('width', '100%');
-            }
-
-            if (hasInsideLabel) {
-                $intLabelEl.show();
-                $barEl.css({ 'justify-content': barJustify, padding: barPadding });
-            } else {
-                $intLabelEl.hide();
-            }
-
             $row.css({
                 transform: 'translateY(' + currentTop + 'px)',
                 height: self.options.barHeight + 'px',
@@ -480,6 +564,7 @@
 
             var wPct = maxValue > 0 ? (item.value / maxValue) * 100 : 0;
             $barEl.css('width', wPct + '%');
+
             $row.find('.wcr-row-value').text(Math.round(item.value).toLocaleString());
         });
 
@@ -507,9 +592,8 @@
         else if (normalized < 7.5) step = 5 * mag;
         else step = 10 * mag;
 
-        var mode = this.options.labelMode;
-        var hasOutsideLabel = mode === 'outside_left' || mode === 'both';
-        var labelWidthPct = hasOutsideLabel ? 20 : 0;
+        var typeOutside = this.options.labelTypeOutside || 'text';
+        var labelWidthPct = typeOutside === 'none' ? 0 : 20;
         var barAreaWidthPct = 100 - labelWidthPct;
 
         for (var v = 0; v <= maxValue * 1.1; v += step) {
@@ -542,7 +626,6 @@
             }
         });
 
-        // ★追加: フロントエンド用データソース切り替えロジック
         $('.wcr-source-toggle').on('change', function () {
             var val = $(this).val();
             if (val === 'csv') {
