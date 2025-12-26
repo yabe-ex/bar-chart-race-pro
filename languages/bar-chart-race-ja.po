@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: Bar Chart Race\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2025-12-15 22:09+0000\n"
-"PO-Revision-Date: 2025-12-15 22:12+0000\n"
+"PO-Revision-Date: 2025-12-26 23:01+0000\n"
 "Last-Translator: \n"
 "Language-Team: 日本語\n"
 "Language: ja\n"
@@ -15,152 +15,198 @@ msgstr ""
 "X-Loco-Version: 2.8.0; wp-6.9; php-8.1.23\n"
 "X-Domain: bar-chart-race"
 
-#: bar-chart-race.php:60
+#: bar-chart-race-pro.php:61
 msgid "Add New"
 msgstr "新規追加"
 
-#: bar-chart-race.php:61
+#: bar-chart-race-pro.php:62
 msgid "Add New Chart Race"
 msgstr "新規チャートレースを追加"
 
-#. Name of the plugin
-#| msgid "WP Chart Race"
-msgid "Bar Chart Race"
-msgstr "Bar Chart Race"
+#: inc/class-admin.php:366
+msgid "Add Row"
+msgstr "行を追加"
 
-#: inc/class-admin.php:273
+#: inc/class-admin.php:216
+msgid ""
+"Are you sure you want to refresh data from Google Sheets? Current manual "
+"edits will be lost."
+msgstr "Googleスプレッドシートからデータを更新してもよろしいですか？現在の手動編集は失われます。"
+
+#: inc/class-admin.php:407
+msgid "Background Image"
+msgstr "背景画像"
+
+#. Name of the plugin
+#| msgid "Bar Chart Race"
+msgid "Bar Chart Race Pro"
+msgstr "Bar Chart Race Pro"
+
+#: inc/class-admin.php:472
 msgid "Bar Height"
 msgstr "バーの高さ"
 
-#: inc/class-admin.php:277
+#: inc/class-admin.php:476
 msgid "Bar Spacing"
 msgstr "バーの間隔"
 
-#: inc/class-admin.php:262
-msgid "Both (Default)"
-msgstr "両方 (デフォルト)"
-
-#: inc/class-front.php:104
+#: inc/class-front.php:172
 msgid "Chart created successfully!"
 msgstr "チャートが正常に作成されました！"
 
-#: inc/class-admin.php:167
+#: inc/class-admin.php:238
 msgid "Chart Preview & Settings"
 msgstr "チャートプレビュー ＆ 設定"
 
-#: bar-chart-race.php:59
+#: bar-chart-race-pro.php:60
 msgid "Chart Race"
 msgstr "チャートレース"
 
-#: inc/class-admin.php:412
+#: inc/class-admin.php:721
 msgid "Chart Race Global Settings"
 msgstr "Chart Race 全体設定"
 
-#: bar-chart-race.php:58
+#: bar-chart-race-pro.php:59
 msgid "Chart Races"
 msgstr "チャートレース"
 
-#: inc/class-admin.php:231
+#: inc/class-admin.php:375
 msgid "Chart Settings"
 msgstr "チャート設定"
 
-#: inc/class-front.php:144 inc/class-admin.php:374
+#: inc/class-front.php:209 inc/class-admin.php:652
 msgid "Chart Title"
 msgstr "チャートタイトル"
 
-#: inc/class-admin.php:241
+#: inc/class-admin.php:391
 msgid "Color Palette"
 msgstr "カラーパレット"
 
-#: inc/class-admin.php:252
+#: inc/class-admin.php:426
+msgid "Color:"
+msgstr "色:"
+
+#: inc/class-admin.php:444
 msgid "Container Margin (px)"
 msgstr "コンテナの余白 (px)"
 
-#: inc/class-admin.php:144
+#: inc/class-admin.php:212
 msgid "Copied!"
 msgstr "コピーしました！"
 
-#: inc/class-admin.php:66 inc/class-admin.php:205
+#: inc/class-admin.php:102 inc/class-admin.php:301
 msgid "Copy"
 msgstr "コピー"
 
-#: inc/class-front.php:152
+#: inc/class-front.php:236
 msgid "Create and Show Chart"
 msgstr "チャートを作成して表示"
 
-#: inc/class-front.php:133
+#: inc/class-front.php:196
 msgid "Create another chart"
 msgstr "別のチャートを作成する"
 
-#: inc/class-admin.php:29
+#: inc/class-admin.php:686
+msgid "Create Chart"
+msgstr "チャートを作成"
+
+#: inc/class-admin.php:34
 msgid "Create New"
 msgstr "新規作成"
 
-#: inc/class-admin.php:28 inc/class-admin.php:365
+#: inc/class-admin.php:33 inc/class-admin.php:643
 msgid "Create New Chart"
 msgstr "新しいチャートを作成"
 
-#: inc/class-front.php:119
-msgid "Created Chart ID:"
-msgstr "作成されたチャートID:"
+#: inc/class-front.php:201
+msgid "Create Your Bar Chart Race"
+msgstr "バーチャートレースを作成"
 
-#: inc/class-admin.php:378
+#: inc/class-front.php:222 inc/class-admin.php:672
 msgid "CSV File"
 msgstr "CSVファイル"
 
-#: inc/class-front.php:148
-msgid "CSV File (Columns: time, label, value)"
-msgstr "CSVファイル (列: time, label, value)"
-
-#: inc/class-admin.php:86
+#: inc/class-admin.php:131
 msgid "CSV file is required."
 msgstr "CSVファイルは必須です。"
 
-#: inc/class-front.php:18 inc/class-admin.php:150
+#: inc/class-admin.php:332
+msgid "CSV Upload"
+msgstr "CSVアップロード"
+
+#: inc/class-admin.php:331
+msgid "Current Source:"
+msgstr "現在のソース:"
+
+#: inc/class-admin.php:415
+msgid "Custom Label Settings"
+msgstr "カスタムラベル設定"
+
+#: inc/class-front.php:17 inc/class-admin.php:221
 msgid "Data insufficient: At least 2 time points are required."
 msgstr "データ不足: 少なくとも2つの時点が必要です。"
 
-#: inc/class-admin.php:293
+#: inc/class-front.php:214 inc/class-admin.php:656
+msgid "Data Source"
+msgstr "データソース"
+
+#: inc/class-admin.php:328
+msgid "Data Source & Editor"
+msgstr "データソース ＆ エディタ"
+
+#: inc/class-admin.php:83
+msgid "Data synchronized successfully!"
+msgstr "データの同期に成功しました！"
+
+#: inc/class-admin.php:492
 msgid "Date Format"
 msgstr "日付形式"
 
-#: inc/class-admin.php:459
+#: inc/class-admin.php:783
 msgid "Default Bar Height"
 msgstr "デフォルトのバーの高さ"
 
-#: inc/class-admin.php:463
+#: inc/class-admin.php:787
 msgid "Default Bar Spacing"
 msgstr "デフォルトのバーの間隔"
 
-#: inc/class-admin.php:425
+#: inc/class-admin.php:740
 msgid "Default Color Palette"
 msgstr "デフォルトのカラーパレット"
 
-#: inc/class-admin.php:475
+#: inc/class-admin.php:799
 msgid "Default Date Format"
 msgstr "デフォルトの日付形式"
 
-#: inc/class-admin.php:467
+#: inc/class-admin.php:791
 msgid "Default Font Size"
 msgstr "デフォルトのフォントサイズ"
 
-#: inc/class-admin.php:441
-msgid "Default Label Mode"
-msgstr "デフォルトのラベルモード"
+#: inc/class-admin.php:765
+msgid "Default Label Display: Inside"
+msgstr "デフォルトのラベル表示: 内部"
 
-#: inc/class-admin.php:437
+#: inc/class-admin.php:757
+msgid "Default Label Display: Outside"
+msgstr "デフォルトのラベル表示: 外部"
+
+#: inc/class-admin.php:734
+msgid "Default Loop Animation"
+msgstr "デフォルトのループアニメーション"
+
+#: inc/class-admin.php:752
 msgid "Default Margin"
 msgstr "デフォルトの余白"
 
-#: inc/class-admin.php:471
+#: inc/class-admin.php:795
 msgid "Default Max Bars"
 msgstr "デフォルトの最大バー数"
 
-#: inc/class-admin.php:455
+#: inc/class-admin.php:779
 msgid "Default Playback Speed"
 msgstr "デフォルトの再生速度"
 
-#: inc/class-admin.php:419
+#: inc/class-admin.php:728
 msgid "Default Show Title"
 msgstr "デフォルトのタイトル表示"
 
@@ -168,166 +214,246 @@ msgstr "デフォルトのタイトル表示"
 msgid "Edel Hearts"
 msgstr "Edel Hearts"
 
-#: bar-chart-race.php:62
+#: bar-chart-race-pro.php:63
 msgid "Edit Chart Race"
 msgstr "チャートレースを編集"
 
-#: inc/class-front.php:145
+#: inc/class-admin.php:353
+msgid "Edit data directly. Click \"Update Post\" to save changes."
+msgstr "データを直接編集します。変更を保存するには「更新」をクリックしてください。"
+
+#: inc/class-front.php:210
 msgid "Ex: Population Trends by Prefecture"
 msgstr "例: 都道府県別人口推移"
 
-#: inc/class-admin.php:375
+#: inc/class-admin.php:653
 msgid "Ex: Sales Ranking"
 msgstr "例: 売上ランキング"
 
-#: inc/class-admin.php:145
+#: inc/class-admin.php:213
 msgid "Failed to copy."
 msgstr "コピーに失敗しました。"
 
-#: inc/class-admin.php:117
+#: inc/class-admin.php:185
 msgid "Failed to create post."
 msgstr "投稿の作成に失敗しました。"
 
-#: inc/class-front.php:83
+#: inc/class-front.php:128 inc/class-admin.php:72 inc/class-admin.php:151
+msgid "Failed to fetch data from Google Sheets."
+msgstr "Googleスプレッドシートからのデータ取得に失敗しました。"
+
+#: inc/class-front.php:115
 msgid "Failed to load CSV. Please check the format."
 msgstr "CSVの読み込みに失敗しました。フォーマットを確認してください。"
 
-#: inc/class-admin.php:90
+#: inc/class-admin.php:136
 msgid "Failed to parse CSV."
 msgstr "CSVの解析に失敗しました。"
 
-#: inc/class-front.php:106
+#: inc/class-front.php:132 inc/class-admin.php:79 inc/class-admin.php:157
+msgid "Failed to parse Sheet data."
+msgstr "シートデータの解析に失敗しました。"
+
+#: inc/class-front.php:174
 msgid "Failed to save data."
 msgstr "データの保存に失敗しました。"
 
-#: inc/class-admin.php:281
+#: inc/class-admin.php:480
 msgid "Font Size"
 msgstr "フォントサイズ"
 
-#: inc/class-admin.php:39
+#: inc/class-admin.php:44
 msgid "Global Settings"
 msgstr "全体設定"
+
+#: inc/class-admin.php:332
+msgid "Google Sheet"
+msgstr "Googleスプレッドシート"
+
+#: inc/class-admin.php:62
+msgid "Google Sheet URL is not set."
+msgstr "GoogleスプレッドシートのURLが設定されていません。"
+
+#: inc/class-front.php:120 inc/class-admin.php:140
+msgid "Google Sheet URL is required."
+msgstr "GoogleスプレッドシートのURLは必須です。"
+
+#: inc/class-front.php:217 inc/class-front.php:230 inc/class-admin.php:666
+msgid "Google Sheets URL"
+msgstr "GoogleスプレッドシートURL"
 
 #. Author URI of the plugin
 msgid "https://edel-hearts.com"
 msgstr "https://edel-hearts.com"
 
-#: inc/class-admin.php:260
-msgid "Inside Left"
-msgstr "内部左寄せ"
+#: inc/class-admin.php:453 inc/class-admin.php:461
+msgid "Icon"
+msgstr "アイコン"
 
-#: inc/class-admin.php:261
-msgid "Inside Right"
-msgstr "内部右寄せ"
+#: inc/class-admin.php:430
+msgid "Icon:"
+msgstr "アイコン:"
 
-#: inc/class-admin.php:257
-msgid "Label Display Mode"
-msgstr "ラベル表示モード"
+#: inc/class-front.php:124 inc/class-admin.php:67 inc/class-admin.php:145
+msgid "Invalid Google Sheet URL."
+msgstr "無効なGoogleスプレッドシートURLです。"
 
-#: bar-chart-race.php:63
+#: inc/class-admin.php:457
+msgid "Label Display: Inside Bar"
+msgstr "ラベル表示: バー内部"
+
+#: inc/class-admin.php:449
+msgid "Label Display: Outside (Left)"
+msgstr "ラベル表示: 外側 (左)"
+
+#: inc/class-admin.php:386 inc/class-admin.php:736
+msgid "Loop Animation"
+msgstr "ループアニメーション"
+
+#: inc/class-front.php:232
+msgid "Make sure the sheet is public (Anyone with the link)."
+msgstr "シートが公開（リンクを知っている全員）になっていることを確認してください。"
+
+#: bar-chart-race-pro.php:64
 msgid "New Chart Race"
 msgstr "新しいチャートレース"
 
-#: bar-chart-race.php:66
+#: bar-chart-race-pro.php:67
 msgid "No chart races found"
 msgstr "チャートレースが見つかりません"
 
-#: bar-chart-race.php:67
+#: bar-chart-race-pro.php:68
 msgid "No chart races found in Trash"
 msgstr "ゴミ箱にチャートレースは見つかりません"
 
-#: inc/class-admin.php:226
+#: inc/class-admin.php:323
 msgid "No data available."
 msgstr "データがありません。"
 
-#: inc/class-admin.php:285
+#: inc/class-admin.php:451 inc/class-admin.php:459
+msgid "None"
+msgstr "なし"
+
+#: inc/class-admin.php:484
 msgid "Number of items"
 msgstr "表示件数"
 
-#: inc/class-admin.php:259
-msgid "Outside Left (Fixed)"
-msgstr "左側外固定"
+#: inc/class-admin.php:351
+msgid "Open Data Editor"
+msgstr "データエディタを開く"
 
-#: inc/class-front.php:20 inc/class-admin.php:152
+#: inc/class-admin.php:682
+msgid "Paste the URL of a public Google Sheet."
+msgstr "公開されたGoogleスプレッドシートのURLを貼り付けてください。"
+
+#: inc/class-front.php:19 inc/class-admin.php:223
 msgid "Pause"
 msgstr "一時停止"
 
-#: inc/class-front.php:19 inc/class-admin.php:151
+#: inc/class-admin.php:57
+msgid "Permission denied."
+msgstr "権限がありません。"
+
+#: inc/class-front.php:18 inc/class-admin.php:222
 msgid "Play"
 msgstr "再生"
 
-#: inc/class-admin.php:269
+#: inc/class-admin.php:468
 msgid "Playback Speed"
 msgstr "再生速度"
 
-#: inc/class-front.php:79
+#: inc/class-front.php:111
 msgid "Please select a CSV file."
 msgstr "CSVファイルを選択してください。"
 
-#: inc/class-admin.php:369
-msgid "Please upload a CSV file (Columns: time, label, value)"
-msgstr "CSVファイルをアップロードしてください (列: time, label, value)"
+#: inc/class-admin.php:418
+msgid "Please upload data to configure labels."
+msgstr "ラベルを設定するにはデータをアップロードしてください。"
 
-#: inc/class-front.php:122
-msgid "Preview"
-msgstr "プレビュー"
-
-#: inc/class-front.php:21 inc/class-admin.php:153
+#: inc/class-front.php:20 inc/class-admin.php:224
 msgid "Reset"
 msgstr "リセット"
 
-#: inc/class-admin.php:483
+#: inc/class-admin.php:807
 msgid "Save Changes"
 msgstr "変更を保存"
 
-#: bar-chart-race.php:65
+#: bar-chart-race-pro.php:66
 msgid "Search Chart Races"
 msgstr "チャートレースを検索"
 
-#: inc/class-front.php:73 inc/class-admin.php:77
+#: inc/class-front.php:99 inc/class-admin.php:113
 msgid "Security check failed."
 msgstr "セキュリティチェックに失敗しました。"
 
-#: inc/class-admin.php:40 inc/class-admin.php:159
+#: inc/class-admin.php:410 inc/class-admin.php:433
+msgid "Select"
+msgstr "選択"
+
+#: inc/class-admin.php:45 inc/class-admin.php:230
 msgid "Settings"
 msgstr "設定"
 
-#: inc/class-admin.php:405
+#: inc/class-admin.php:714
 msgid "Settings saved."
 msgstr "設定を保存しました。"
 
-#: inc/class-admin.php:54
+#: inc/class-admin.php:679
+msgid "Sheet URL"
+msgstr "シートURL"
+
+#: inc/class-admin.php:91
 msgid "Shortcode"
 msgstr "ショートコード"
 
-#: inc/class-front.php:120
-msgid "Shortcode to embed this chart:"
-msgstr "このチャートを埋め込むためのショートコード:"
-
-#: inc/class-admin.php:201
+#: inc/class-admin.php:297
 msgid "Shortcode:"
 msgstr "ショートコード:"
 
-#: inc/class-admin.php:236 inc/class-admin.php:421
+#: inc/class-admin.php:380 inc/class-admin.php:730
 msgid "Show Title"
 msgstr "タイトルを表示"
 
-#: inc/class-admin.php:413
+#: inc/class-front.php:226 inc/class-admin.php:675
+msgid "Supported columns: time (日付), label (名前), value (値)"
+msgstr "対応カラム: time (日付), label (名前), value (値)"
+
+#: inc/class-admin.php:338
+msgid "Sync Now"
+msgstr "今すぐ同期"
+
+#: inc/class-admin.php:452 inc/class-admin.php:460
+msgid "Text"
+msgstr "テキスト"
+
+#: inc/class-admin.php:402
+msgid "Text Color (Labels & Values)"
+msgstr "文字色 (ラベルと値)"
+
+#: inc/class-admin.php:722
 msgid "These settings will be used as defaults for new charts."
 msgstr "これらの設定は新しいチャートのデフォルトとして使用されます。"
 
-#: inc/class-front.php:77 inc/class-admin.php:84
+#: inc/class-front.php:107 inc/class-admin.php:125
 msgid "Title is required."
 msgstr "タイトルは必須です。"
 
-#: inc/class-admin.php:382
-msgid "Upload CSV and Create"
-msgstr "CSVをアップロードして作成"
+#: inc/class-admin.php:647
+msgid "Upload a CSV file or enter Google Sheets URL."
+msgstr "CSVファイルをアップロードするか、GoogleスプレッドシートのURLを入力してください。"
 
 #. Description of the plugin
 msgid "Upload CSV data to create animated bar chart races."
 msgstr "CSVデータをアップロードして、アニメーションするバーチャートレースを作成します。"
 
-#: bar-chart-race.php:64
+#: inc/class-front.php:216 inc/class-admin.php:661
+msgid "Upload CSV File"
+msgstr "CSVファイルをアップロード"
+
+#: inc/class-admin.php:344
+msgid "Upload new CSV to replace data:"
+msgstr "新しいCSVをアップロードしてデータを置換:"
+
+#: bar-chart-race-pro.php:65
 msgid "View Chart Race"
 msgstr "チャートレースを表示"
