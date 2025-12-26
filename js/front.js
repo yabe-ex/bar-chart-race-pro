@@ -214,9 +214,14 @@
         var self = this;
         var timeMap = {};
         var labelMap = {};
+
+        // データのクレンジングと集計
         $.each(this.rawData, function (i, item) {
-            timeMap[item.time] = true;
-            labelMap[item.label] = true;
+            // ラベルが存在し、空文字でない場合のみ有効なデータとして扱う
+            if (item.label && String(item.label).trim() !== '') {
+                timeMap[item.time] = true;
+                labelMap[item.label] = true;
+            }
         });
 
         this.totalUniqueLabels = Object.keys(labelMap).length;
@@ -225,7 +230,10 @@
         this.frames = $.map(times, function (time) {
             var values = {};
             $.each(self.rawData, function (i, item) {
-                if (item.time === time) values[item.label] = parseFloat(item.value);
+                // ここでも有効なラベルのみ値を取得
+                if (item.time === time && item.label && String(item.label).trim() !== '') {
+                    values[item.label] = parseFloat(item.value);
+                }
             });
             return { time: time, formattedTime: self.formatTime(time), values: values };
         });
@@ -280,16 +288,21 @@
         this.$scaleWrap = $('<div class="wcr-scale-wrap"></div>').appendTo(this.$container);
         this.$barsWrap = $('<div class="wcr-bars-wrap"></div>').appendTo(this.$container);
 
+        // --- ここからコントロールボタン生成の修正箇所 ---
         var $controls = $('<div class="wcr-controls"></div>').appendTo(this.$container);
         var self = this;
 
-        var iconPlay = '<svg viewBox="0 0 24 24" class="wcr-icon"><path d="M8 5v14l11-7z" fill="currentColor"/></svg>';
-        var iconPause = '<svg viewBox="0 0 24 24" class="wcr-icon"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z" fill="currentColor"/></svg>';
+        // アイコンSVG定義
+        var iconPlay =
+            '<svg viewBox="0 0 24 24" class="wcr-icon" style="width:24px;height:24px;"><path d="M8 5v14l11-7z" fill="currentColor"/></svg>';
+        var iconPause =
+            '<svg viewBox="0 0 24 24" class="wcr-icon" style="width:24px;height:24px;"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z" fill="currentColor"/></svg>';
         var iconReplay =
-            '<svg viewBox="0 0 24 24" class="wcr-icon"><path d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z" fill="currentColor"/></svg>';
+            '<svg viewBox="0 0 24 24" class="wcr-icon" style="width:24px;height:24px;"><path d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z" fill="currentColor"/></svg>';
 
         this.icons = { play: iconPlay, pause: iconPause };
 
+        // wcr-btn-icon クラスを使用し、テキストを含めずにアイコンのみを挿入
         this.$playBtn = $('<button type="button" class="wcr-btn-icon" title="Play">' + iconPlay + '</button>').on('click', function () {
             self.togglePlay();
         });
@@ -312,6 +325,7 @@
             });
 
         $controls.append(this.$playBtn).append(this.$seekBar).append(this.$resetBtn);
+        // --- コントロール生成修正ここまで ---
 
         this.rowElements = {};
     };

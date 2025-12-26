@@ -185,19 +185,22 @@
     border-top: 1px solid #eee;
 }
 .wcr-btn-icon {
-    background: transparent;
-    border: none;
+    background: transparent !important; /* !important を追加 */
+    border: none !important; /* !important を追加 */
     cursor: pointer;
-    padding: 5px;
+    padding: 5px !important; /* !important を追加 */
     color: var(--wcr-text-color, #555);
-    border-radius: 50%;
+    border-radius: 50% !important; /* !important を追加 */
     transition: background-color 0.2s, color 0.2s;
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 40px;
-    height: 40px;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+    width: 40px !important; /* !important を追加 */
+    height: 40px !important; /* !important を追加 */
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3) !important; /* !important を追加 */
+    line-height: normal !important; /* 追加: テーマのline-height干渉を防ぐ */
+    box-sizing: border-box !important; /* 追加: サイズ計算を統一 */
+    margin: 0 !important; /* 追加: 余計なマージンを削除 */
 }
 .wcr-btn-icon:hover {
     background-color: rgba(255, 255, 255, 0.2);
