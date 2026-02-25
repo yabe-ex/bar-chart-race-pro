@@ -113,6 +113,8 @@
     };
 
     function formatNumberShort(num) {
+        if (Math.abs(num) >= 1.0e15) return (Math.abs(num) / 1.0e15).toFixed(1) + 'P';
+        if (Math.abs(num) >= 1.0e12) return (Math.abs(num) / 1.0e12).toFixed(1) + 'T';
         if (Math.abs(num) >= 1.0e9) return (Math.abs(num) / 1.0e9).toFixed(1) + 'G';
         if (Math.abs(num) >= 1.0e6) return (Math.abs(num) / 1.0e6).toFixed(1) + 'M';
         if (Math.abs(num) >= 1.0e3) return (Math.abs(num) / 1.0e3).toFixed(1) + 'K';
